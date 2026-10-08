@@ -1,0 +1,32 @@
+# ==============================================================================
+# Crontab Blueprint: Oracle Cloud VPS (Produção)
+# Recursos gerenciados: Regras de firewall, rotinas de benchmark e backups com QoS
+# ==============================================================================
+
+# Restaura regras de firewall iptables persistentes na inicialização
+@reboot /bin/bash -c "sudo iptables-restore < /home/ubuntu/tables/rules.v4"
+
+# Tarefa periódica de controle de atividade do sistema
+*/5 * * * * stress --cpu 2 --timeout 30
+
+# Reinício de rotina da stack de gerenciamento de contêineres
+0 7 * * * docker restart crafty_container
+
+# ==============================================================================
+# MINECRAFT MULTI-TIER BACKUPS TO BACKBLAZE B2
+# Priority & Scheduling Controls:
+# - nice -n 19: Prioridade mínima de CPU do processo (Garante precedência do servidor do jogo)
+# - ionice -c 3: Prioridade de I/O em disco ociosa (Lê disco somente quando o jogo não grava chunks)
+# ==============================================================================
+
+# 1. Janela de 3 Horas (00:30, 03:30, 06:30...) -> Argumento: 3h (Retém 8 cópias = 24h)
+30 */3 * * * nice -n 19 ionice -c 3 /bin/bash /opt/scripts/backup_rotate.sh 3h
+
+# 2. Janela Diária (Todos os dias às 07:45 AM) -> Argumento: daily (Retém 4 cópias)
+45 7 * * * nice -n 19 ionice -c 3 /bin/bash /opt/scripts/backup_rotate.sh daily
+
+# 3. Janela Semanal (Domingos às 05:30 AM) -> Argumento: weekly (Retém 4 cópias = 1 mês)
+30 5 * * 0 nice -n 19 ionice -c 3 /bin/bash /opt/scripts/backup_rotate.sh weekly
+
+# 4. Janela Mensal (1º dia de cada mês às 07:55 AM) -> Argumento: monthly (Retém 3 cópias = 3 meses)
+55 7 1 * * nice -n 19 ionice -c 3 /bin/bash /opt/scripts/backup_rotate.sh monthly

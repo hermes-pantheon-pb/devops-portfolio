@@ -115,9 +115,13 @@ graph TB
 │       └── docker-compose.yml         # Stack com passthrough de GPU (/dev/dri) e montagem NFS
 └── automation/
     ├── scripts/
-    │   └── backup-rclone.sh           # Script de backup incremental com logs, retries e rclone crypt
+    │   ├── omv-docker-rclone-backup.sh# Blueprint de container efêmero Docker no OMV com Least Privilege
+    │   ├── oracle-vps-backup-rotate.sh# Script de retenção multi-tier e expurgo numérico na Oracle Cloud
+    │   └── backup-rclone.sh           # Script de backup incremental com logs e rclone crypt
+    ├── crontab/
+    │   └── crontab-oracle-vps.cron    # Agendamento no Linux com prioridades de kernel nice e ionice
     └── systemd/
-        ├── rclone-backup.service      # Service unit do systemd para execução do script
+        ├── rclone-backup.service      # Service unit do systemd para execução de backups locais
         ├── rclone-backup.timer        # Timer unit para agendamento resiliente diário
         ├── mnt-storage-media.mount    # Montagem resiliente de sistema de arquivos NFS via systemd
         └── mnt-storage-media.automount# Automount sob demanda com timeout de inatividade
@@ -127,30 +131,36 @@ graph TB
 
 ## 🛠️ Detalhamento dos Pilares Técnicos
 
-### 1. Administração de Ambientes Linux
+### 1. Administração de Ambientes Linux & Concorrência
 - **Distribuições Enxutas**: Utilização extensiva de **Alpine Linux** para microVMs dedicadas a serviços específicos, resultando em menor superfície de ataque, boot quase instantâneo e uso mínimo de memória RAM (< 128 MB por nó).
-- **Automação Nativa com systemd**: Substituição de entradas frágeis de montagem e cron por `.mount`, `.automount` e `.timer` units. Assegura que montagens remotas dependam de `network-online.target` e sejam reconectadas sob demanda com timeouts controlados.
-- **Diagnóstico & Troubleshooting**: Utilização rotineira de `journalctl` com filtros de prioridade, `dmesg` para detecção de anomalias de hardware/IOMMU, `ss` e ferramentas do pacote `iproute2` para inspeção de sockets e tabelas de roteamento.
+- **Controle de Concorrência de I/O e CPU**: Aplicação de diretivas avançadas de kernel no Linux (`nice -n 19` e `ionice -c 3`) em tarefas agendadas na Oracle Cloud VPS. Isso garante que rotinas pesadas de compactação e envio de dados para nuvem operem exclusivamente em modo ocioso, sem impactar o desempenho do servidor de jogos.
+- **Automação com systemd & Cron**: Substituição de montagens frágeis por `.mount` e `.automount` com dependência estrita de rede.
 
-### 2. Conteinerização com Docker & Orquestração
+### 2. Armazenamento Resiliente & Estratégia de Backup 3-2-1
+- **Mídias Físicas Distintas & Sincronização**: Sincronização contínua de dados essenciais entre dispositivos móveis (memórias flash / cartões SD), workstations (SSDs) e o cluster de armazenamento primário (HDDs mecânicos em pool MergerFS via controladora HBA dedicada).
+- **Backups via Contêineres Efêmeros (OMV)**: Execução de tarefas rclone encapsuladas em contêineres Docker descartáveis (`docker run --rm`), operando sob usuário não-root restrito (`--user 1005:100`) e com montagem estritamente somente-leitura (`:ro`), tornando impossível a corrupção da origem.
+- **Point-in-Time Recovery & Ransomware Defense**: Uso de `--backup-dir` com pastas versionadas dinâmicas. Arquivos alterados ou deletados na origem não são sobrescritos destrutivamente, permitindo restauração de estados históricos em caso de incidente.
+- **Retenção Multi-Tier na Oracle Cloud**: Ciclo de vida de backups com retenção horária (3h), diária, semanal e mensal para o Backblaze B2, com expurgo automático via análise de timestamps remotos.
+
+### 3. Conteinerização com Docker & Orquestração
 - **Padronização de Compose**: Todos os contêineres possuem:
   - Diretivas `healthcheck` para checagem ativa de integridade da aplicação.
   - `no-new-privileges: true` para proteção contra elevação indevida de privilégios de kernel.
   - Alocação e reserva de recursos explícitas (`cpus` e `memory`) prevenindo que um serviço consuma a totalidade dos nós.
-- **Portainer Centralizado**: Utilização de agentes leves em cada microVM controlados por um nó mestre do Portainer, possibilitando governança centralizada sem sobrecarregar nós periféricos.
-- **Aceleração por Hardware em Contêineres**: Mapeamento seguro de nós de dispositivo (`/dev/dri/renderD128`) para permitir transcodificação acelerada por hardware de vídeo via Intel QuickSync.
+- **Portainer Centralizado**: Agentes leves em cada microVM controlados por um nó mestre do Portainer, possibilitando governança centralizada sem sobrecarregar nós periféricos.
+- **Aceleração por Hardware**: Mapeamento seguro de nós de dispositivo (`/dev/dri/renderD128`) para transcodificação de vídeo acelerada por hardware (Intel QuickSync / SR-IOV).
 
-### 3. Redes, Isolamento & Nuvem Híbrida
-- **OPNsense Virtualizado com Passthrough**: Placa de rede física dedicada passada via IOMMU para o firewall virtual, tornando o OPNsense a primeira barreira de defesa diretamente ligada ao modem.
-- **VLANs em Bridges Linux**: Uso de uma bridge trunk no Proxmox e bridges downstream associadas a portas de acesso para segregar completamente tráfego de gestão, cargas internas, convidados e dispositivos IoT.
-- **Ingress Zero-Port-Forwarding**: Serviços internos acessíveis externamente não abrem portas no roteador doméstico. O tráfego entra através de uma VPS pública na Oracle Cloud e é transportado via túnel WireGuard de saída persistente.
+### 4. Redes, Isolamento & Nuvem Híbrida
+- **OPNsense Virtualizado com Passthrough**: NIC física Intel i340 dedicada diretamente ligada ao modem via IOMMU.
+- **VLANs em Bridges Linux**: Bridge tronco `M_VLAN_BR0` e sub-redes dedicadas (VLAN 10 Main, VLAN 20 IoT, VLAN 90 Guest), integradas via trunk 802.1Q a roteador OpenWrt com Wi-Fi 6.
+- **Ingress Zero-Port-Forwarding**: Serviços internos expostos externamente através de uma VPS pública na Oracle Cloud conectada por túnel WireGuard de saída persistente.
 
-### 4. Observabilidade & Monitoramento Pragmático
-- **Uptime Kuma**: Monitoramento contínuo de disponibilidade HTTP(s), latência de DNS e portas TCP, integrado a notificações automáticas por e-mail e webhook quando qualquer serviço excede limites de tolerância.
-- **Monitoramento de Saúde de Hardware**: Alertas automáticos no OpenMediaVault configurados para monitorar atributos S.M.A.R.T. dos discos físicos e temperatura do sistema.
-- **Auditoria de Tráfego**: Logs de conexão e bloqueios no firewall OPNsense inspecionados para identificar varreduras e tentativas anômalas de conexão.
+### 5. Observabilidade & Monitoramento Pragmático
+- **Uptime Kuma**: Monitoramento contínuo de disponibilidade HTTP(s), DNS e TCP, integrado a notificações automáticas por e-mail e webhook quando qualquer serviço excede limites de tolerância.
+- **Monitoramento de Saúde de Hardware**: Alertas automáticos no OpenMediaVault configurados para monitorar atributos S.M.A.R.T. dos discos físicos e temperatura.
+- **Auditoria de Tráfego**: Logs de conexão e bloqueios no firewall OPNsense inspecionados para identificar anomalias.
 
-### 5. Integração Contínua (CI/CD)
+### 6. Integração Contínua (CI/CD)
 - **Pipeline Automatizada (GitHub Actions)**:
   - Validação sintática e de interpolação de todas as stacks Docker Compose com `docker compose config`.
   - Análise estática de código dos scripts Bash com `shellcheck`.
