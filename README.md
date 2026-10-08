@@ -107,18 +107,22 @@ graph TB
 │   └── security-and-ingress.md        # Ingress seguro via Oracle Cloud, zero port-forwarding e 2FA
 ├── compose-stacks/
 │   ├── agora-community/
-│   │   └── docker-compose.yml         # TheLounge (memory-capped 384M) + Uptime Kuma 2 (healthcheck & logs)
+│   │   ├── thelounge/docker-compose.yml       # Stack TheLounge (memory cap 384M no Alpine)
+│   │   └── uptime-kuma/docker-compose.yml     # Stack Uptime Kuma 2 (healthcheck curl & rotação de logs)
 │   ├── homer-media/
-│   │   └── docker-compose.yml         # Jellyfin (iGPU /renderD128) + Navidrome + Plex (SQLite em Intel Optane)
+│   │   ├── jellyfin-navidrome/docker-compose.yml # Stack Streaming (Intel QuickSync VAAPI /renderD128)
+│   │   └── plex/docker-compose.yml            # Stack Plex (network_mode: host + SQLite em Intel Optane)
 │   ├── prometheus-downloader/
-│   │   └── docker-compose.yml         # JDownloader-2 + Tautulli (telemetria de mídia)
+│   │   ├── jdownloader/docker-compose.yml     # Stack JDownloader-2 (WebUI porta 5800)
+│   │   └── tautulli/docker-compose.yml        # Stack Tautulli (telemetria e auditoria Plex)
 │   ├── arcadia-gameserver/
-│   │   └── docker-compose.yml         # Crafty Controller 4 (multi-port mapping: Java, Bedrock, Dynmap)
+│   │   ├── crafty/docker-compose.yml          # Stack Crafty Controller 4 (Minecraft Java/Bedrock/Dynmap)
+│   │   └── syncthing/docker-compose.yml       # Stack Syncthing (sincronização de backups de mundos)
 │   ├── syncthing-node/
-│   │   └── docker-compose.yml         # Blueprint de replicação descentralizada entre MicroVMs e storage
+│   │   └── docker-compose.yml                 # Blueprint do agente Syncthing distribuído por MicroVM
 │   └── ingress-proxy/
-│       ├── docker-compose.yml         # Nginx edge proxy com isolamento e limites de recursos
-│       └── nginx.conf                 # Configuração de segurança HTTP, headers e healthz
+│       ├── docker-compose.yml                 # Stack Nginx Edge Proxy (Oracle Cloud)
+│       └── nginx.conf                         # Configuração Nginx com SSL e headers de segurança
 └── automation/
     ├── scripts/
     │   ├── omv-docker-rclone-backup.sh# Blueprint de container efêmero Docker no OMV com Least Privilege

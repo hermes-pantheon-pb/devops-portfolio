@@ -1,7 +1,6 @@
 # ==============================================================================
-# MicroVM Stack: Homer-Media_server
-# Purpose: Hardware-accelerated media streaming, audio server, and library indexing
-# Optimizations: SR-IOV / Intel QuickSync passthrough, Intel Optane SQLite DB caching, read-only media mounts
+# MicroVM: Homer-Media_server | Stack: Jellyfin & Navidrome
+# Purpose: Video streaming with Intel QuickSync GPU acceleration and music streaming
 # ==============================================================================
 
 services:
@@ -24,7 +23,7 @@ services:
       - type: bind
         source: /mnt/mnemosyneomv_MSataP_media
         target: /media
-      # Fontes customizadas para renderização/burn-in de legendas em tempo real
+      # Fontes customizadas para queima de legendas com aceleração
       - type: bind
         source: /mnt/metadata_drive/jellyfin_new/cache/fonts
         target: /usr/local/share/fonts/custom
@@ -43,20 +42,3 @@ services:
       - /mnt/metadata_drive/navidrome/data:/data
       # Biblioteca de música montada estritamente como somente-leitura (:ro)
       - /mnt/mnemosyneomv_MSataP_media/music:/music:ro
-
-  plex:
-    image: lscr.io/linuxserver/plex:latest
-    container_name: plex
-    network_mode: host
-    restart: unless-stopped
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Sao_Paulo
-      - VERSION=docker
-    volumes:
-      - /mnt/metadata_drive/plex/config:/config
-      - /mnt/metadata_drive/plex/transcoding:/transcode
-      # The Injection Layer: Operações SQLite de latência quase zero sobre Intel Optane 8GB
-      - "/mnt/optane_db/plex/Databases:/config/Library/Application Support/Plex Media Server/Plug-in Support/Databases"
-      - /mnt/mnemosyneomv_MSataP_media:/media

@@ -1,0 +1,28 @@
+# ==============================================================================
+# MicroVM: Agora-CommunityHost | Stack: TheLounge
+# Purpose: Web IRC client with strict memory caps for lightweight execution
+# ==============================================================================
+
+services:
+  thelounge:
+    image: lscr.io/linuxserver/thelounge:latest
+    container_name: thelounge
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      # Previne expansão agressiva de memória da runtime V8 do NodeJS
+      - NODE_OPTIONS=--max-old-space-size=512
+    volumes:
+      - thelounge-data:/config
+    ports:
+      - "4000:9000"
+    deploy:
+      resources:
+        limits:
+          # Limite estrito de 384M para preservar recursos no Alpine Linux
+          memory: 384M
+
+volumes:
+  thelounge-data:

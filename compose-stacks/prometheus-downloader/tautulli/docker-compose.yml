@@ -1,0 +1,18 @@
+# ==============================================================================
+# MicroVM: Prometheus_downloader | Stack: Tautulli
+# Purpose: Monitoring, analytics, and telemetry for Plex Media Server
+# ==============================================================================
+
+services:
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /mnt/metadata_drive/tautulli/config:/config
+    ports:
+      - "8181:8181"

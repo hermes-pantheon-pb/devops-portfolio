@@ -1,6 +1,6 @@
 # ==============================================================================
-# MicroVM Stack: Prometheus_downloader
-# Purpose: Remote download management and Plex telemetry / analytics monitoring
+# MicroVM: Prometheus_downloader | Stack: JDownloader-2
+# Purpose: Headless download manager with web interface
 # ==============================================================================
 
 services:
@@ -13,16 +13,3 @@ services:
     volumes:
       - /opt/docker/downloads/jdownloader/config:/config:rw
       - /mnt/mnemosyneomv_MSataP_data:/output:rw
-
-  tautulli:
-    image: lscr.io/linuxserver/tautulli:latest
-    container_name: tautulli
-    restart: unless-stopped
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-    volumes:
-      - /mnt/metadata_drive/tautulli/config:/config
-    ports:
-      - "8181:8181"

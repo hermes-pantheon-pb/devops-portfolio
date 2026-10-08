@@ -1,6 +1,6 @@
 # ==============================================================================
-# MicroVM Stack: Arcadia_GameServer
-# Purpose: Minecraft server fleet management with multi-port mapping (Java + Bedrock + Dynmap)
+# MicroVM: Arcadia_GameServer | Stack: Crafty Controller 4
+# Purpose: Minecraft server management (Java, Bedrock, Dynmap)
 # ==============================================================================
 
 services:
