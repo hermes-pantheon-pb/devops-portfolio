@@ -8,6 +8,9 @@ Este documento apresenta a especificação técnica e visual da infraestrutura d
 
 Toda a arquitetura é projetada para priorizar a **definição lógica de rede sobre a dependência física**, garantindo flexibilidade, isolamento rigoroso de zonas e segurança perimetral centralizada.
 
+![Diagrama Visual da Topologia de Rede](./network-topology.svg)
+
+### Diagrama de Relações e Fluxos Lógicos
 ```mermaid
 graph TB
     subgraph WAN_ZONE ["Zona Externa & Provedor (WAN)"]

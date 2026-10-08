@@ -28,6 +28,9 @@ Este repositório documenta a infraestrutura que projetei e mantenho ativamente,
 
 O ambiente opera como uma nuvem híbrida conectando um cluster local de virtualização sobre **Proxmox VE** a nós de borda na **Oracle Cloud Infrastructure (OCI)**.
 
+![Topologia de Rede Física e Lógica](architecture/network-topology.svg)
+
+### Fluxo de Conexão e Zonas Lógicas
 ```mermaid
 graph TB
     subgraph CLOUD ["Borda Pública (Oracle Cloud - OCI)"]
