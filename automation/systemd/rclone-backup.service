@@ -1,0 +1,19 @@
+[Unit]
+Description=Rclone Automated Off-site Backup Service
+Documentation=https://rclone.org/docs/
+After=network-online.target local-fs.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+EnvironmentFile=-/etc/default/backup-rclone
+ExecStart=/usr/local/bin/backup-rclone.sh
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=10800
+Nice=19
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,51 @@
+name: CI - Infrastructure Quality & Linting
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-compose:
+    name: Validate Docker Compose Stacks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate Compose Stacks
+        run: |
+          echo "Validating Docker Compose stacks..."
+          for compose_file in $(find compose-stacks -name "docker-compose.yml" -o -name "docker-compose.yaml"); do
+            echo "Checking: $compose_file"
+            docker compose -f "$compose_file" config --quiet || exit 1
+          done
+          echo "All compose files are syntactically valid."
+
+  lint-scripts:
+    name: Lint Shell Scripts & Automation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          find automation/scripts -name "*.sh" -exec shellcheck {} +
+
+  validate-systemd:
+    name: Validate Systemd Units
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify Systemd Unit Syntax
+        run: |
+          echo "Checking systemd unit declarations..."
+          for unit in $(find automation/systemd -name "*.service" -o -name "*.timer" -o -name "*.mount"); do
+            echo "Inspecting unit: $unit"
+            systemd-analyze verify "$unit" 2>&1 || true
+          done

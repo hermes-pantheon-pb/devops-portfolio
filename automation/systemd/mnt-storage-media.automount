@@ -1,0 +1,10 @@
+[Unit]
+Description=Automount for Centralized Storage Pool (OMV)
+ConditionPathExists=/mnt/storage/media
+
+[Automount]
+Where=/mnt/storage/media
+TimeoutIdleSec=600
+
+[Install]
+WantedBy=multi-user.target
