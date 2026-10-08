@@ -182,7 +182,51 @@ tail -n +$((MAX_KEEP + 1)) | \
 cut -d "|" -f 2 | \
 while read -r FILENAME; do
     echo "[$TIPO] Deletando antigo: $FILENAME" >> "$LOG_FILE"
-    /usr/bin/rclone delete "$DEST_ARCHIVE/$FILENAME" --config "$RCLONE_CONFIG_PATH" >> "$LOG_FILE" 2>&1
-done
-```
 Esse mecanismo previne o acúmulo infinito de custos de armazenamento em nuvem enquanto assegura a disponibilidade estrita de pontos de restauração históricos.
+
+---
+
+## 6. Observabilidade Proativa: S.M.A.R.T., Status de Scripts & Resource Management
+
+Em vez de sobrecarregar um homelab com stacks pesadas de telemetria contínua (Prometheus/Grafana) que consomem memória e I/O desnecessariamente em nós de armazenamento, o ambiente adota uma **observabilidade pragmática orientada a eventos e notificações por e-mail**:
+
+```mermaid
+graph LR
+    subgraph SENSORS ["Sensores e Coletores de Eventos"]
+        SMART_DAEMON["smartd Daemon (Atributos S.M.A.R.T. dos Discos Físicos)"]
+        SCRIPT_TRAP["Captura de Exit Status & Logs de Scripts"]
+        RESOURCE_MONIT["Resource Management (Thresholds de Pool & Memória)"]
+    end
+
+    subgraph OMV_NOTIFIER ["Motor de Notificação (OpenMediaVault / Postfix)"]
+        SMTP_CLIENT["Agente SMTP Integrado (Autenticado / TLS)"]
+    end
+
+    subgraph ADMIN_INBOX ["Administrador / Engenheiro de Infraestrutura"]
+        EMAIL_ALERT["Notificação Crítica no E-mail com Diagnóstico Detalhado"]
+    end
+
+    SMART_DAEMON -- "Falha de Setor / Degradação" --> SMTP_CLIENT
+    SCRIPT_TRAP -- "Status de Sucesso / Código de Erro != 0" --> SMTP_CLIENT
+    RESOURCE_MONIT -- "Pool > 80% / Saturação de Recursos" --> SMTP_CLIENT
+    SMTP_CLIENT ==> EMAIL_ALERT
+```
+
+### 1. Monitoramento de Integridade Física via S.M.A.R.T. (smartd)
+- **Varredura Proativa de Atributos Críticos**: Monitoramento contínuo de métricas que antecedem falhas mecânicas ou de mídia:
+  - `Reallocated_Sector_Ct` (Setores Realocados)
+  - `Current_Pending_Sector` (Setores Pendentes de Realocação)
+  - `Offline_Uncorrectable` (Erros Irrecuperáveis)
+  - Temperatura de operação dos discos no gabinete.
+- **Autotestes Agendados**: Execução automática de testes curtos (*Short Self-Test*) diários e testes estendidos (*Extended Self-Test*) semanais.
+- **Notificação Imediata**: Qualquer desvio de integridade dispara um e-mail de alerta de alta prioridade contendo o número de série do disco e o relatório bruto do erro para troca preventiva antes de perda de dados.
+
+### 2. Notificação de Status de Finalização de Scripts
+- **Captura de Códigos de Saída (`Exit Status`)**: Todas as tarefas automatizadas (OMV Scheduled Tasks e cron na VPS) registram logs detalhados e capturam códigos de retorno:
+  - Se a tarefa termina com código `0`, um resumo conciso com tempo total de sincronização e volume de dados trafegados é catalogado.
+  - Se qualquer comando falha (código de retorno `!= 0`, erro de token na API de nuvem ou timeout de rede), o *stderr* completo é enviado imediatamente por e-mail para ação corretiva.
+
+### 3. Resource Management & Limites de Capacidade
+- **Capacidade do Pool de Armazenamento**: Alertas graduais por e-mail quando a ocupação do MergerFS ultrapassa `80%` (aviso preventivo) e `90%` (crítico), garantindo tempo hábil para expurgo ou adição de novos discos físicos.
+- **Saúde Operacional do Nó**: Notificações automáticas caso ocorra saturação severa de memória RAM ou falha de montagem de sistemas de arquivos, assegurando operação contínua sem necessidade de intervenção visual frequente em painéis de métricas.
+

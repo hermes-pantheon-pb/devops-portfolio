@@ -158,10 +158,12 @@ graph TB
 - **VLANs em Bridges Linux**: Bridge tronco `M_VLAN_BR0` e sub-redes dedicadas (VLAN 10 Main, VLAN 20 IoT, VLAN 90 Guest), integradas via trunk 802.1Q a roteador OpenWrt com Wi-Fi 6.
 - **Ingress Zero-Port-Forwarding**: Serviços internos expostos externamente através de uma VPS pública na Oracle Cloud conectada por túnel WireGuard de saída persistente.
 
-### 5. Observabilidade & Monitoramento Pragmático
-- **Uptime Kuma**: Monitoramento contínuo de disponibilidade HTTP(s), DNS e TCP, integrado a notificações automáticas por e-mail e webhook quando qualquer serviço excede limites de tolerância.
-- **Monitoramento de Saúde de Hardware**: Alertas automáticos no OpenMediaVault configurados para monitorar atributos S.M.A.R.T. dos discos físicos e temperatura.
-- **Auditoria de Tráfego**: Logs de conexão e bloqueios no firewall OPNsense inspecionados para identificar anomalias.
+### 5. Observabilidade & Monitoramento Pragmático (Event-Driven Alerting)
+- **Uptime Kuma & Resolução de Endpoints**: Monitoramento ativo de disponibilidade de aplicações HTTP(s), latência de resolução DNS e portas TCP críticas, despachando alertas automáticos por e-mail e webhook em caso de indisponibilidade prolongada.
+- **Saúde Física de Discos (S.M.A.R.T. via smartd)**: Varredura proativa de setores realocados, setores pendentes e variações térmicas dos discos mecânicos e SSDs no OMV, com disparo de alerta imediato por e-mail contendo número de série do dispositivo afetado.
+- **Status de Finalização de Scripts & Automação**: Captura de códigos de retorno (`exit status`) e saída de erro de rotinas agendadas (OMV Scheduled Tasks e cron na VPS), enviando relatórios resumidos de conclusão e e-mails de emergência em falhas operacionais.
+- **Resource Management Proativo**: Thresholds de capacidade no OMV notificando o administrador por e-mail quando a ocupação do pool MergerFS ultrapassa 80% (preventivo) e 90% (crítico), bem como alertas para saturação de memória ou anomalias de I/O.
+- **Auditoria de Tráfego Perimetral**: Análise sob demanda dos logs de inspeção e regras de firewall no OPNsense para identificar varreduras e tentativas anômalas de conexão.
 
 ### 6. Integração Contínua (CI/CD)
 - **Pipeline Automatizada (GitHub Actions)**:

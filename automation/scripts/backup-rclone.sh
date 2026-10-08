@@ -35,6 +35,17 @@ log "INFO" "Iniciando rotina de sincronização de: ${SOURCE_DIR} -> ${REMOTE_TA
 # Execução do rclone com controle de concorrência, retries e criptografia ponta a ponta
 START_TIME=$(date +%s)
 
+# Notificação por E-mail (se MAIL_TO estiver definido)
+ADMIN_EMAIL="${BACKUP_ALERT_EMAIL:-}"
+
+notify_admin() {
+    local subject="$1"
+    local message="$2"
+    if [[ -n "${ADMIN_EMAIL}" ]] && command -v mail >/dev/null 2>&1; then
+        echo -e "${message}" | mail -s "${subject}" "${ADMIN_EMAIL}" || true
+    fi
+}
+
 if rclone sync "${SOURCE_DIR}" "${REMOTE_TARGET}" \
     --fast-list \
     --transfers=4 \
@@ -48,8 +59,12 @@ if rclone sync "${SOURCE_DIR}" "${REMOTE_TARGET}" \
     
     DURATION=$(( $(date +%s) - START_TIME ))
     log "INFO" "Sincronização concluída com sucesso em ${DURATION} segundos."
+    notify_admin "[SUCCESS] Backup Concluído: ${REMOTE_TARGET}" \
+        "Backup finalizado com sucesso em ${DURATION} segundos.\nOrigem: ${SOURCE_DIR}\nDestino: ${REMOTE_TARGET}\nLog: ${LOG_FILE}"
 else
     STATUS=$?
     log "ERROR" "Falha na sincronização do rclone com código de saída: ${STATUS}"
+    notify_admin "[CRITICAL] Falha no Backup: ${REMOTE_TARGET}" \
+        "Erro na rotina de sincronização (Exit Code: ${STATUS}).\nConsulte o log: ${LOG_FILE}\nOrigem: ${SOURCE_DIR}"
     exit "${STATUS}"
 fi
