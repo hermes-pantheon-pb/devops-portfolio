@@ -13,7 +13,7 @@
 
 ## 🎯 Sobre Mim
 
-Estudante de **Engenharia de Computação** com sólida vivência prática em administração de sistemas Linux, arquitetura de redes virtuais e físicas, conteinerização com Docker e gestão de armazenamento resiliente.
+Estudante de **Engenharia de Computação** na UFMG com sólida vivência prática em administração de sistemas Linux, arquitetura de redes virtuais e físicas, conteinerização com Docker e gestão de armazenamento resiliente.
 
 Este repositório documenta a infraestrutura que projetei e mantenho ativamente, servindo como demonstração das minhas competências práticas em:
 - **Administração Linux Avançada**: Diagnóstico de kernel/serviços (`journalctl`, `dmesg`, `ss`), automações via `systemd` (units, timers, automounts) e distribuição enxuta em microVMs Alpine.
