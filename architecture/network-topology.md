@@ -24,12 +24,6 @@ graph TB
             OPN_WAN["Porta 1 (igb0): WAN Direta (DHCP/PPPoE)"]
             OPN_DDNS["Plugin Integrado: os-ddns (Resolução Dinâmica de Endpoints)"]
             OPN_CORE["Motor de Firewall & Roteamento Inter-VLAN"]
-            
-            subgraph OPN_WG ["Instâncias WireGuard no Firewall"]
-                WG_ADMIN["WireGuard Admin (Full Access à Rede Interna)"]
-                WG_GUEST["WireGuard Convidado (Acesso Restrito / Guest Rules)"]
-            end
-            
             OPN_VTNET["Interface VirtIO Trunk (vtnet0)"]
             OPN_VLAN10["vlan01.10.0 (Tag 10 - Main_Lan / 10.10.10.0/24)"]
             OPN_VLAN20["vlan02.20.0 (Tag 20 - IoT_Lan / 10.20.20.0/24)"]
@@ -78,7 +72,6 @@ graph TB
     I340_PASSTHROUGH --> OPN_WAN
     OPN_WAN --- OPN_DDNS
     OPN_WAN --- OPN_CORE
-    OPN_CORE --- OPN_WG
 
     %% Conexões VLAN OPNsense
     OPN_CORE --> OPN_VTNET
@@ -93,6 +86,7 @@ graph TB
     MAIN_LAN_BR --> NIC1_REALTEK
     NIC1_REALTEK <== "2.5 Gbps Físico" ==> MAIN_PC
     MAIN_LAN_BR --> VM_TRUSTED
+    MAIN_LAN_BR --> VM_MEDIA
 
     M_VLAN_BR0 -- "Trunk 802.1Q Físico" --> NIC4_I340
     NIC4_I340 <== "Cabo Ethernet Trunk" ==> W_TRUNK
@@ -102,7 +96,7 @@ graph TB
 
     %% Armazenamento Isolado
     VM_STORAGE <== "NFS Direto na Bridge nfs_isolat" ==> NFS_ISOLAT
-    NFS_ISOLAT <== "Acesso Ponto-a-Ponto Seguro" ==> VM_MEDIA
+    NFS_ISOLAT <== "Acesso Ponto-a-Ponto Seguro (Interface 2)" ==> VM_MEDIA
 
     %% Distribuição OpenWrt
     W_TRUNK --> W_V10 --> SSID_MAIN
@@ -129,14 +123,15 @@ A configuração no Proxmox elimina a complexidade de configurar tags 802.1Q den
        [ Main_Lan (Linux Bridge) ]
             ├─── nic1 (Realtek 2.5GbE) ──> PC Principal do Usuário
             ├─── MicroVMs Confiáveis (Alpine/Debian com VirtIO simples)
+            ├─── Servidor de Mídia (Jellyfin/Plex - streaming web na Main_Lan)
             └─── Containers / Portainer Workloads
 ```
 
 ### Por que essa arquitetura é diferenciada?
-1. **Transparência para Cargas de Trabalho**: As MicroVMs e o PC principal conectam-se à bridge `Main_Lan` sem necessidade de suporte ou configuração de VLAN no sistema operacional convidado.
+1. **Transparência para Cargas de Trabalho**: As MicroVMs, o servidor de mídia e o PC principal conectam-se à bridge `Main_Lan` sem necessidade de suporte ou configuração de VLAN no sistema operacional convidado.
 2. **Políticas Forçadas no Firewall**: Qualquer pacote que precise sair da sub-rede local precisa atravessar a porta de acesso `M_VLAN_BR0.10`. Nesse momento, o Linux aplica a tag `VLAN 10` e encaminha o pacote via `M_VLAN_BR0` até a interface `vlan01.10.0` no OPNsense, onde é inspecionado, roteado ou bloqueado.
 3. **Isolamento de Cargas de Risco / DMZ**: Para serviços web públicos ou agentes autônomos que demandam isolamento estrito, a interface virtual da VM é conectada diretamente à bridge `M_VLAN_BR0` com a tag de VLAN configurada no próprio Proxmox (VLAN access port por VM). Assim, o tráfego da VM nunca toca na `Main_Lan` sem antes passar pelas regras de filtragem do OPNsense.
-4. **Isolamento Total do Barramento de Armazenamento (`nfs_isolat`)**: A bridge `nfs_isolat` é totalmente desconectada do firewall, não possui IP de gateway, DHCP ou DNS. Apenas a VM do OpenMediaVault e os nós autorizados (como a VM do servidor de mídia) possuem interfaces anexadas a essa bridge, garantindo zero exposição e máxima taxa de transferência.
+4. **Isolamento Total do Barramento de Armazenamento (`nfs_isolat`)**: A bridge `nfs_isolat` é totalmente desconectada do firewall, não possui IP de gateway, DHCP ou DNS. Apenas a VM do OpenMediaVault e os nós autorizados (como a VM do servidor de mídia, que possui interface secundária dedicada a essa rede privada) possuem interfaces anexadas a essa bridge, garantindo zero exposição pública de armazenamento e máxima taxa de transferência.
 
 ---
 
@@ -185,38 +180,3 @@ graph LR
 
 - **Mapeamento de SSIDs**: Cada rede sem fio é mapeada diretamente para a respectiva sub-interface de VLAN do OpenWrt, garantindo que celulares de visitantes ou lâmpadas inteligentes caiam automaticamente na sua zona de isolamento sem intervenção manual.
 - **Rede de Gestão OpenWrt**: Uma interface dedicada (`br-mngmt` / `192.168.2.1/24`) e um SSID reservado (`Pantheon_WRT-MNGMT`) garantem acesso seguro à gerência do roteador caso ocorra qualquer indisponibilidade no trunk principal.
-
----
-
-## 5. Acesso Remoto, WireGuard & Resolução DDNS
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Admin as Administrador Remoto
-    actor Guest as Usuário Visitante Remoto
-    participant DDNS as OPNsense DDNS Plugin (os-ddns)
-    participant FW as OPNsense Firewall & Regras
-    participant WG_A as WireGuard Admin (wg0)
-    participant WG_G as WireGuard Guest (wg1)
-    participant LAN as Serviços Internos (VLAN 10)
-    participant WAN as Saída Internet
-
-    Note over DDNS: O plugin os-ddns atualiza o IP dinâmico da WAN automaticamente<br/>mantendo o endpoint sempre resolvível externamente.
-
-    Admin->>DDNS: Resolve endpoint público (ex: vpn.dominio.net)
-    Admin->>WG_A: Conexão via Chave Assimétrica WireGuard
-    WG_A->>FW: Autentica na interface de Administração
-    FW->>LAN: Permite acesso total (SSH, Proxmox, Portainer, NFS)
-
-    Guest->>DDNS: Resolve endpoint público
-    Guest->>WG_G: Conexão via Chave Convidado
-    WG_G->>FW: Autentica na interface Guest
-    FW--xLAN: BLOQUEIA acesso à VLAN 10 e subredes privadas
-    FW->>WAN: Permite apenas tráfego seguro de navegação / serviços autorizados
-```
-
-- **Plugin DDNS Nativo (`os-ddns`)**: Executado diretamente no OPNsense, monitora a interface WAN física (Intel i340) e atualiza os registros DNS dinâmicos em tempo real sempre que o ISP renova a concessão do IP público.
-- **Instâncias WireGuard com Privilégios Mínimos**:
-  - **Admin Tunnel**: Configurado com split-tunneling para tráfego corporativo/doméstico, liberando acesso às sub-redes `10.10.10.0/24` e interfaces de gerência de hipervisor.
-  - **Guest Tunnel**: Destinado a endpoints compartilhados, com regras restritivas no firewall que bloqueiam acesso a qualquer sub-rede privada e impedem spoofing ou varreduras de rede.
