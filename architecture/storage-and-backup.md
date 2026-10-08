@@ -6,6 +6,9 @@ Este documento aborda a topologia de persistência, controle de acesso granular 
 
 ## 1. Topologia Completa de Armazenamento e Backups
 
+![Diagrama Visual da Arquitetura de Armazenamento Local](./storage-architecture.svg)
+
+### Visão Lógica e Fluxo de Dados
 ```mermaid
 graph TB
     subgraph EDGE_DEVICES ["Dispositivos de Borda (Clientes de Dados)"]

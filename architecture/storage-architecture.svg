@@ -1,0 +1,286 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 880" width="100%" height="100%" style="background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="storageBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+    <linearGradient id="omvCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0369a1" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#082f49" stop-opacity="0.5" />
+    </linearGradient>
+    <linearGradient id="dockerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#312e81" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0.6" />
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="storageShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.45" />
+    </filter>
+
+    <!-- Markers -->
+    <marker id="arrowCyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399" />
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#fbbf24" />
+    </marker>
+    <marker id="arrowPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#c084fc" />
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#60a5fa" />
+    </marker>
+  </defs>
+
+  <!-- Title & Header Bar -->
+  <g transform="translate(40, 25)">
+    <rect width="1200" height="54" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1" />
+    <circle cx="25" cy="27" r="7" fill="#ef4444" />
+    <circle cx="45" cy="27" r="7" fill="#f59e0b" />
+    <circle cx="65" cy="27" r="7" fill="#10b981" />
+    <text x="90" y="33" fill="#f8fafc" font-size="17" font-weight="700" letter-spacing="0.5">Arquitetura de Armazenamento Local, Pooling (MergerFS) &amp; Backup Conteinerizado Efêmero</text>
+    <rect x="1030" y="14" width="150" height="26" rx="13" fill="#0284c7" fill-opacity="0.25" stroke="#38bdf8" stroke-width="1" />
+    <text x="1105" y="31" fill="#38bdf8" font-size="12" font-weight="600" text-anchor="middle">Storage &amp; Backup</text>
+  </g>
+
+  <!-- 1. DISPOSITIVOS DE BORDA & 2 MÍDIAS FÍSICAS (Top Left) -->
+  <g transform="translate(40, 95)">
+    <rect width="360" height="235" rx="10" fill="#111827" stroke="#f59e0b" stroke-width="1.5" filter="url(#storageShadow)" />
+    <rect x="0" y="0" width="360" height="32" rx="10" fill="#78350f" fill-opacity="0.4" />
+    <text x="15" y="21" fill="#fde68a" font-size="12" font-weight="700">MÍDIA FÍSICA DISTINTA 1: DISPOSITIVOS DE BORDA</text>
+
+    <!-- Dispositivo Móvel -->
+    <g transform="translate(15, 42)">
+      <rect width="330" height="80" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+      <text x="15" y="22" fill="#f8fafc" font-size="12.5" font-weight="700">Dispositivos Móveis / Celulares</text>
+      <text x="15" y="40" fill="#cbd5e1" font-size="11">• Memória Flash Interna + Cartões MicroSD</text>
+      <text x="15" y="56" fill="#cbd5e1" font-size="11">• Dados: Fotos, Gravações, Mídia Pessoal</text>
+      <text x="15" y="70" fill="#fbbf24" font-size="10" font-weight="600">➔ Sincronização contínua via Wi-Fi</text>
+    </g>
+
+    <!-- Workstation Principal -->
+    <g transform="translate(15, 134)">
+      <rect width="330" height="85" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1" />
+      <text x="15" y="22" fill="#f8fafc" font-size="12.5" font-weight="700">Workstation Principal (PC)</text>
+      <text x="15" y="40" fill="#cbd5e1" font-size="11">• SSDs NVMe / Discos Locais de Trabalho</text>
+      <text x="15" y="56" fill="#cbd5e1" font-size="11">• Dados de Projetos, Datasets e Código</text>
+      <text x="15" y="72" fill="#34d399" font-size="10" font-weight="600">➔ Link direto 2.5GbE para o Servidor de Storage</text>
+    </g>
+  </g>
+
+  <!-- 2. CAMADA FÍSICA PROXMOX & HBA PASSTHROUGH (Top Center) -->
+  <g transform="translate(430, 95)">
+    <rect width="380" height="235" rx="10" fill="#111827" stroke="#38bdf8" stroke-width="1.5" filter="url(#storageShadow)" />
+    <rect x="0" y="0" width="380" height="32" rx="10" fill="#0369a1" fill-opacity="0.4" />
+    <text x="15" y="21" fill="#bae6fd" font-size="12" font-weight="700">MÍDIA FÍSICA DISTINTA 2: SERVIDOR &amp; HBA HARDWARE</text>
+
+    <!-- Discos Físicos -->
+    <g transform="translate(15, 42)">
+      <rect width="350" height="80" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1" />
+      <text x="15" y="22" fill="#f8fafc" font-size="12.5" font-weight="700">Discos Rígidos SATA / SAS (HDDs)</text>
+      <text x="15" y="40" fill="#cbd5e1" font-size="11">• Múltiplos discos heterogêneos de alta capacidade</text>
+      <text x="15" y="56" fill="#cbd5e1" font-size="11">• Sistemas de arquivos nativos individuais (ext4/xfs)</text>
+      <text x="15" y="70" fill="#38bdf8" font-size="10" font-weight="600">• Monitoramento de integridade via S.M.A.R.T.</text>
+    </g>
+
+    <!-- HBA Passthrough -->
+    <g transform="translate(15, 134)">
+      <rect width="350" height="85" rx="6" fill="#082f49" stroke="#0284c7" stroke-width="1.5" />
+      <text x="15" y="22" fill="#e0f2fe" font-size="12" font-weight="700">Controladora HBA (PCIe Passthrough / IOMMU)</text>
+      <text x="15" y="40" fill="#bae6fd" font-size="11">• Passagem direta do hardware para a VM do OMV</text>
+      <text x="15" y="56" fill="#bae6fd" font-size="11">• Zero emulação de disco pelo hipervisor Proxmox</text>
+      <text x="15" y="72" fill="#7dd3fc" font-size="10.5" font-weight="700">➔ Controle direto de I/O de bloco e diagnósticos</text>
+    </g>
+  </g>
+
+  <!-- 3. STORAGE CONSUMERS & PRIVATE BRIDGE (Top Right) -->
+  <g transform="translate(840, 95)">
+    <rect width="400" height="235" rx="10" fill="#111827" stroke="#c084fc" stroke-width="1.5" filter="url(#storageShadow)" />
+    <rect x="0" y="0" width="400" height="32" rx="10" fill="#581c87" fill-opacity="0.4" />
+    <text x="15" y="21" fill="#f3e8ff" font-size="12" font-weight="700">CONSUMIDORES &amp; REDE EXCLUSIVA (NFS/SMB)</text>
+
+    <!-- Private Bridge Card -->
+    <g transform="translate(15, 42)">
+      <rect width="370" height="70" rx="6" fill="#1e1b4b" stroke="#818cf8" stroke-width="1.5" />
+      <text x="12" y="20" fill="#e0e7ff" font-size="12" font-weight="700">Bridge Privada: nfs_isolat</text>
+      <text x="12" y="38" fill="#c7d2fe" font-size="10.5">• Sem Roteador | Sem DHCP | Sem DNS</text>
+      <text x="12" y="54" fill="#a5b4fc" font-size="10">• Tráfego exclusivo ponto-a-ponto sem trânsito de firewall</text>
+    </g>
+
+    <!-- Media Server Consumer -->
+    <g transform="translate(15, 124)">
+      <rect width="370" height="95" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1" />
+      <text x="12" y="20" fill="#f8fafc" font-size="12" font-weight="700">MicroVM: Media Server (Jellyfin / Stacks)</text>
+      <text x="12" y="38" fill="#cbd5e1" font-size="10.5">• iGPU SR-IOV / QuickSync Passthrough</text>
+      <text x="12" y="54" fill="#cbd5e1" font-size="10.5">• Montagem NFS v4.2 via systemd.mount direta</text>
+      <text x="12" y="70" fill="#cbd5e1" font-size="10.5">• Usuário dedicado com acesso restrito a dados</text>
+      <text x="12" y="85" fill="#34d399" font-size="9.5" font-weight="600">Alta vazão e zero saturação da rede geral</text>
+    </g>
+  </g>
+
+  <!-- 4. CORE VM: OPENMEDIAVAULT & MERGERFS (Middle Box) -->
+  <g transform="translate(40, 350)">
+    <rect width="1200" height="180" rx="12" fill="url(#omvCardGrad)" stroke="#0ea5e9" stroke-width="2" filter="url(#storageShadow)" />
+    <rect x="0" y="0" width="1200" height="34" rx="12" fill="#0369a1" fill-opacity="0.7" />
+    <text x="20" y="23" fill="#f0f9ff" font-size="14" font-weight="700">VM DE ARMAZENAMENTO CENTRAL: OPENMEDIAVAULT (OMV) + MERGERFS</text>
+
+    <!-- MergerFS Pool Component -->
+    <g transform="translate(20, 48)">
+      <rect width="400" height="115" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+      <text x="15" y="22" fill="#38bdf8" font-size="13" font-weight="700">MergerFS Pool: /srv/mergerfs/MainSataPool</text>
+      <text x="15" y="42" fill="#f8fafc" font-size="11">• Política MFS (Most Free Space) para balanceamento</text>
+      <text x="15" y="58" fill="#cbd5e1" font-size="11">• Une discos heterogêneos sem risco de perda total em RAID</text>
+      <text x="15" y="74" fill="#cbd5e1" font-size="11">• Se 1 disco falhar, os demais preservam seus arquivos intactos</text>
+      <rect x="15" y="85" width="370" height="20" rx="4" fill="#082f49" />
+      <text x="200" y="99" fill="#7dd3fc" font-size="10.5" font-weight="600" text-anchor="middle">Dataset Raiz: /data/MSataPDataPool</text>
+    </g>
+
+    <!-- Controle de Acesso e Permissões POSIX -->
+    <g transform="translate(440, 48)">
+      <rect width="360" height="115" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="1.5" />
+      <text x="15" y="22" fill="#4ade80" font-size="13" font-weight="700">Governança &amp; Permissões (Least Privilege)</text>
+      <text x="15" y="42" fill="#f8fafc" font-size="11">• Permissões granulares POSIX a nível de pasta</text>
+      <text x="15" y="58" fill="#cbd5e1" font-size="11">• Cada serviço/MicroVM possui usuário dedicado no OMV</text>
+      <text x="15" y="74" fill="#cbd5e1" font-size="11">• Execução das tarefas de backup com UID:GID 1005:100</text>
+      <rect x="15" y="85" width="330" height="20" rx="4" fill="#064e3b" />
+      <text x="180" y="99" fill="#86efac" font-size="10.5" font-weight="600" text-anchor="middle">Isolamento rigoroso entre tenants locais</text>
+    </g>
+
+    <!-- Scheduled Tasks Engine -->
+    <g transform="translate(820, 48)">
+      <rect width="360" height="115" rx="8" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5" />
+      <text x="15" y="22" fill="#fbbf24" font-size="13" font-weight="700">OMV Scheduled Tasks (Motor Cron)</text>
+      <text x="15" y="42" fill="#f8fafc" font-size="11">• Dispara rotinas automatizadas sem agentes no host OS</text>
+      <text x="15" y="58" fill="#cbd5e1" font-size="11">• Executa contêineres Docker efêmeros descartáveis</text>
+      <text x="15" y="74" fill="#cbd5e1" font-size="11">• Gera timestamp dinâmico para controle de versão</text>
+      <rect x="15" y="85" width="330" height="20" rx="4" fill="#451a03" />
+      <text x="180" y="99" fill="#fde68a" font-size="10.5" font-weight="600" text-anchor="middle">Disparador de Backup: docker run --rm</text>
+    </g>
+  </g>
+
+  <!-- 5. EFÊMERO DOCKER RCLONE RUNTIME (Bottom Left & Center) -->
+  <g transform="translate(40, 550)">
+    <rect width="780" height="295" rx="12" fill="url(#dockerGrad)" stroke="#10b981" stroke-width="2" filter="url(#storageShadow)" />
+    <rect x="0" y="0" width="780" height="34" rx="12" fill="#064e3b" fill-opacity="0.8" />
+    <text x="20" y="23" fill="#a7f3d0" font-size="14" font-weight="700">EXECUÇÃO EFÊMERA DE BACKUP: CONTÊINER DOCKER (RCLONE)</text>
+    <text x="590" y="23" fill="#6ee7b7" font-size="11.5" font-weight="600">docker run --rm rclone/rclone:latest</text>
+
+    <!-- Bloco 1: Segurança & Montagem Read-Only -->
+    <g transform="translate(20, 50)">
+      <rect width="360" height="110" rx="6" fill="#111827" stroke="#22c55e" stroke-width="1" />
+      <text x="15" y="22" fill="#4ade80" font-size="12" font-weight="700">1. Blindagem de Origem (Read-Only :ro)</text>
+      <text x="15" y="42" fill="#f8fafc" font-size="11">-v /srv/mergerfs/MainSataPool:/data:ro</text>
+      <text x="15" y="60" fill="#94a3b8" font-size="10.5">• A origem é montada estritamente como somente-leitura</text>
+      <text x="15" y="76" fill="#94a3b8" font-size="10.5">• Um contêiner comprometido NÃO PODE deletar arquivos locais</text>
+      <text x="15" y="94" fill="#a7f3d0" font-size="10" font-weight="600">--user "1005:100" (Execução não-root)</text>
+    </g>
+
+    <!-- Bloco 2: Point-in-Time & Anti-Ransomware -->
+    <g transform="translate(400, 50)">
+      <rect width="360" height="110" rx="6" fill="#111827" stroke="#38bdf8" stroke-width="1" />
+      <text x="15" y="22" fill="#38bdf8" font-size="12" font-weight="700">2. Proteção Contra Ransomware &amp; Exclusão</text>
+      <text x="15" y="42" fill="#f8fafc" font-size="11">--backup-dir "gdrive_crypt:.../versions/${TIMESTAMP}"</text>
+      <text x="15" y="60" fill="#94a3b8" font-size="10.5">• Arquivos alterados/apagados NÃO são sobrescritos</text>
+      <text x="15" y="76" fill="#94a3b8" font-size="10.5">• São movidos para subdiretório com data e hora exatas</text>
+      <text x="15" y="94" fill="#7dd3fc" font-size="10" font-weight="600">Point-in-Time Recovery para qualquer dia anterior</text>
+    </g>
+
+    <!-- Bloco 3: Rate Limiting & Otimização de Rede/QoS -->
+    <g transform="translate(20, 172)">
+      <rect width="740" height="105" rx="6" fill="#111827" stroke="#f59e0b" stroke-width="1" />
+      <text x="15" y="22" fill="#fbbf24" font-size="12.5" font-weight="700">3. Engenharia de Desempenho, QoS e Rate Limits de API</text>
+      
+      <!-- 4 Badges de flags -->
+      <g transform="translate(15, 36)">
+        <rect width="165" height="55" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1" />
+        <text x="10" y="20" fill="#fde68a" font-size="11" font-weight="700">--tpslimit 10</text>
+        <text x="10" y="38" fill="#94a3b8" font-size="9.5">Protege contra erro 429</text>
+        <text x="10" y="49" fill="#94a3b8" font-size="9.5">(Too Many Requests)</text>
+      </g>
+
+      <g transform="translate(195, 36)">
+        <rect width="165" height="55" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1" />
+        <text x="10" y="20" fill="#fde68a" font-size="11" font-weight="700">--bwlimit 30M</text>
+        <text x="10" y="38" fill="#94a3b8" font-size="9.5">Limita upload a 30 MB/s</text>
+        <text x="10" y="49" fill="#94a3b8" font-size="9.5">Zero bufferbloat na WAN</text>
+      </g>
+
+      <g transform="translate(375, 36)">
+        <rect width="175" height="55" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1" />
+        <text x="10" y="20" fill="#fde68a" font-size="11" font-weight="700">--drive-chunk-size 64M</text>
+        <text x="10" y="38" fill="#94a3b8" font-size="9.5">Otimização RAM vs vazão</text>
+        <text x="10" y="49" fill="#94a3b8" font-size="9.5">para arquivos grandes</text>
+      </g>
+
+      <g transform="translate(565, 36)">
+        <rect width="160" height="55" rx="4" fill="#1e293b" stroke="#334155" stroke-width="1" />
+        <text x="10" y="20" fill="#fde68a" font-size="11" font-weight="700">--fast-list</text>
+        <text x="10" y="38" fill="#94a3b8" font-size="9.5">Consulta em lote</text>
+        <text x="10" y="49" fill="#94a3b8" font-size="9.5">Economiza chamadas API</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- 6. NUVEM CRIPTOGRAFADA / DESTINO OFF-SITE (Bottom Right) -->
+  <g transform="translate(840, 550)">
+    <rect width="400" height="295" rx="12" fill="url(#cloudGrad)" stroke="#6366f1" stroke-width="2" filter="url(#storageShadow)" />
+    <rect x="0" y="0" width="400" height="34" rx="12" fill="#3730a3" fill-opacity="0.8" />
+    <text x="15" y="23" fill="#e0e7ff" font-size="14" font-weight="700">DESTINO OFF-SITE: CLOUD CRIPTOGRAFADA</text>
+
+    <!-- Remote Crypt Box -->
+    <g transform="translate(15, 48)">
+      <rect width="370" height="60" rx="6" fill="#1e1b4b" stroke="#818cf8" stroke-width="1" />
+      <text x="12" y="20" fill="#e0e7ff" font-size="12" font-weight="700">rclone crypt remote: gdrive_crypt</text>
+      <text x="12" y="36" fill="#c7d2fe" font-size="10.5">• Criptografia cliente ponta a ponta (AES-256)</text>
+      <text x="12" y="50" fill="#a5b4fc" font-size="10">• Nomes de arquivos e dados cifrados antes de sair pela WAN</text>
+    </g>
+
+    <!-- Folder Structure in Cloud -->
+    <g transform="translate(15, 120)">
+      <rect width="370" height="155" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1" />
+      <text x="15" y="22" fill="#94a3b8" font-size="11.5" font-weight="700">ESTRUTURA DE ARMAZENAMENTO REMOTO</text>
+      
+      <!-- Current Active Folder -->
+      <g transform="translate(15, 35)">
+        <rect width="340" height="42" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1" />
+        <text x="10" y="18" fill="#38bdf8" font-size="11" font-weight="700">/backup/.../music (Espelho Ativo)</text>
+        <text x="10" y="32" fill="#cbd5e1" font-size="10">Estado idêntico ao pool local mais recente</text>
+      </g>
+
+      <!-- Versioned Folder -->
+      <g transform="translate(15, 88)">
+        <rect width="340" height="52" rx="4" fill="#1e293b" stroke="#c084fc" stroke-width="1" />
+        <text x="10" y="18" fill="#c084fc" font-size="11" font-weight="700">/backup/.../music-versions/${TIMESTAMP}</text>
+        <text x="10" y="32" fill="#cbd5e1" font-size="10">Arquivos modificados ou deletados preservados</text>
+        <text x="10" y="44" fill="#a7f3d0" font-size="9.5" font-weight="600">Snapshots imutáveis para restauração granular</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================== CONNECTING PATHS ==================== -->
+  
+  <!-- Dispositivos de Borda -> OMV MergerFS Pool -->
+  <path d="M 220, 330 L 220, 395" fill="none" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arrowAmber)" />
+
+  <!-- HBA Passthrough -> OMV MergerFS Pool -->
+  <path d="M 620, 330 L 620, 395" fill="none" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrowCyan)" />
+
+  <!-- OMV -> nfs_isolat / Media Server -->
+  <path d="M 1040, 395 L 1040, 330" fill="none" stroke="#c084fc" stroke-width="2.5" marker-end="url(#arrowPurple)" />
+
+  <!-- OMV MergerFS -> Docker rclone container (:ro) -->
+  <path d="M 220, 530 L 220, 595" fill="none" stroke="#10b981" stroke-width="3" marker-end="url(#arrowGreen)" />
+
+  <!-- Docker rclone container -> Cloud Storage -->
+  <path d="M 820, 700 L 840, 700" fill="none" stroke="#6366f1" stroke-width="3" marker-end="url(#arrowBlue)" />
+
+</svg>

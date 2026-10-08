@@ -137,6 +137,9 @@ graph TB
 - **Automação com systemd & Cron**: Substituição de montagens frágeis por `.mount` e `.automount` com dependência estrita de rede.
 
 ### 2. Armazenamento Resiliente & Estratégia de Backup 3-2-1
+
+![Arquitetura de Armazenamento Local e Backup Efêmero](architecture/storage-architecture.svg)
+
 - **Mídias Físicas Distintas & Sincronização**: Sincronização contínua de dados essenciais entre dispositivos móveis (memórias flash / cartões SD), workstations (SSDs) e o cluster de armazenamento primário (HDDs mecânicos em pool MergerFS via controladora HBA dedicada).
 - **Backups via Contêineres Efêmeros (OMV)**: Execução de tarefas rclone encapsuladas em contêineres Docker descartáveis (`docker run --rm`), operando sob usuário não-root restrito (`--user 1005:100`) e com montagem estritamente somente-leitura (`:ro`), tornando impossível a corrupção da origem.
 - **Point-in-Time Recovery & Ransomware Defense**: Uso de `--backup-dir` com pastas versionadas dinâmicas. Arquivos alterados ou deletados na origem não são sobrescritos destrutivamente, permitindo restauração de estados históricos em caso de incidente.
