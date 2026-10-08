@@ -2,7 +2,8 @@
 
 > **Repositório de documentação arquitetural, automações de infraestrutura e padrões de conteinerização de um ambiente de alta resiliência e nuvem híbrida.**
 
-[![CI - Infrastructure Quality](https://github.com/placeholder-user/devops-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/placeholder-user/devops-portfolio/actions)
+[![CI - Infrastructure Quality](https://github.com/hermes-pantheon-pb/devops-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/hermes-pantheon-pb/devops-portfolio/actions)
+[![Curriculum Vitae](https://img.shields.io/badge/Curriculum%20Vitae-Online-ea580c?logo=read-the-docs&logoColor=white)](https://github.com/hermes-pantheon-pb/curriculum-vitae)
 ![Linux](https://img.shields.io/badge/Linux-Debian%20%7C%20Alpine%20%7C%20Arch-FCC624?logo=linux&logoColor=black)
 ![Virtualization](https://img.shields.io/badge/Hypervisor-Proxmox%20VE-E57000?logo=proxmox&logoColor=white)
 ![Networking](https://img.shields.io/badge/Firewall-OPNsense%20%26%20OpenWrt-D32F2F)
