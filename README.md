@@ -38,23 +38,32 @@ graph TB
     end
 
     subgraph WAN ["Trânsito Seguro & Internet"]
-        INTERNET(("Internet Pública"))
+        ISP["Modem / ISP (IP Dinâmico)"]
         TUNNEL["Túnel WireGuard Criptografado (Outbound-Only)"]
     end
 
     subgraph PROXMOX ["Cluster Hipervisor (Proxmox VE)"]
         subgraph CORE_NET ["Camada de Borda & Roteamento"]
-            OPNSENSE["OPNsense Firewall (NIC Física Passthrough)"]
-            VMBR0["Linux Bridge vmbr0 (VLAN-Aware)"]
-            VMBR_STOR["Bridge Ponto-a-Ponto (Storage Isolado)"]
+            I340_WAN["Intel i340-T2 (PCIe Passthrough - WAN)"]
+            OPNSENSE["OPNsense (os-ddns, WireGuard Admin/Guest, VLANs 10, 20, 90)"]
+            M_VLAN_BR0["Bridge Tronco: M_VLAN_BR0 (VLAN-Aware)"]
+            ACCESS_PORT["Linux VLAN Port: M_VLAN_BR0.10"]
+            MAIN_LAN["Bridge Interna: Main_Lan (Untagged)"]
+            NFS_ISOLAT["Bridge Privada: nfs_isolat (Direct NFS)"]
         end
 
         subgraph WORKLOADS ["Workloads & MicroVMs (Alpine / Debian)"]
-            VM_KUMA["MicroVM: Observabilidade (Uptime Kuma)"]
-            VM_APPS["MicroVM: Orquestração (Portainer / Docker)"]
-            VM_MEDIA["MicroVM: Servidor de Mídia (iGPU Passthrough / SR-IOV)"]
-            VM_STORAGE["Storage VM: OpenMediaVault + MergerFS (HBA Passthrough)"]
+            VM_TRUSTED["MicroVMs Internas (Portainer, Uptime Kuma, Apps)"]
+            VM_MEDIA["MicroVM Media Server (iGPU / SR-IOV Passthrough)"]
+            VM_STORAGE["Storage VM: OMV + MergerFS (HBA Passthrough)"]
+            VM_DMZ["MicroVMs DMZ / Serviços Públicos"]
         end
+    end
+
+    subgraph OPENWRT_WIFI ["Roteador Wi-Fi 6 (OpenWrt MT7981)"]
+        SSID_MAIN["SSID: Pantheon (VLAN 10)"]
+        SSID_IOT["SSID: Pantheon_IoT (VLAN 20)"]
+        SSID_GUEST["SSID: Pantheon_Convidado (VLAN 90)"]
     end
 
     subgraph BACKUP_TIER ["Destinos de Backup Off-site (rclone Crypt)"]
@@ -63,16 +72,19 @@ graph TB
         GDRIVE["Google Workspace"]
     end
 
-    INTERNET --> OCI_EDGE
+    ISP --> I340_WAN --> OPNSENSE
     OCI_WG <== TUNNEL ==> OPNSENSE
-    OPNSENSE --> VMBR0
+    OPNSENSE <== "VirtIO Trunk (vtnet0)" ==> M_VLAN_BR0
 
-    VMBR0 -- "VLAN 20 (Apps)" --> VM_APPS
-    VMBR0 -- "VLAN 20 (Apps)" --> VM_MEDIA
-    VMBR0 -- "VLAN 10 (Monitor)" --> VM_KUMA
+    M_VLAN_BR0 --> ACCESS_PORT --> MAIN_LAN
+    MAIN_LAN --> VM_TRUSTED
+    MAIN_LAN --> VM_MEDIA
+    M_VLAN_BR0 -- "Tag Específica no Proxmox" --> VM_DMZ
 
-    VM_MEDIA <== "NFS v4.2 Direto" ==> VMBR_STOR
-    VMBR_STOR <== "Alta Vazão Sem Firewall" ==> VM_STORAGE
+    M_VLAN_BR0 -- "nic4 (Trunk Físico 802.1Q)" --> OPENWRT_WIFI
+    
+    VM_MEDIA <== "NFS v4.2 Direto" ==> NFS_ISOLAT
+    NFS_ISOLAT <== "Alta Vazão Sem Firewall" ==> VM_STORAGE
 
     VM_STORAGE -. "Rotina Automática (systemd.timer)" .-> BACKUP_TIER
 ```
