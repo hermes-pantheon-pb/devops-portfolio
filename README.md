@@ -20,7 +20,7 @@ Este repositório documenta a infraestrutura que projetei e mantenho ativamente,
 - **Engenharia de Redes & Segurança**: Virtualização de firewalls perimetrais (OPNsense com PCIe Passthrough de NIC), segmentação L2/L3 com bridges Linux e VLANs 802.1Q, VPNs WireGuard e roteamento com OpenWrt.
 - **Conteinerização & Orquestração**: Docker Compose estruturado com limites de CPU/RAM, verificações de saúde (`healthchecks`), isolamento de redes de contêineres e aceleração de hardware via passthrough de GPU (SR-IOV / Intel QuickSync).
 - **Armazenamento e Política de Backup 3-2-1**: Pooling de dados com MergerFS, pontes NFS/SMB isoladas, sincronização entre nós (Syncthing) e backups criptografados com `rclone` para múltiplos provedores de nuvem (Backblaze B2, Hetzner, Google Drive).
-- **Esteiras de Integração Contínua (CI/CD)**: Automação via GitHub Actions para validação sintática de stacks Compose, linters de shell (`shellcheck`) e garantia de conformidade de infraestrutura.
+- **Conceitos de CI/CD & Transição Prática**: Domínio dos fundamentos teóricos de Integração Contínua (triggers, runners, linters e validações automatizadas). As esteiras de GitHub Actions deste repositório foram desenhadas com assistência de IA como laboratório prático de estudos, representando a principal área que desejo exercitar e aprofundar diretamente nos projetos da empresa.
 
 ---
 
@@ -179,11 +179,15 @@ graph TB
 - **Resource Management Proativo**: Thresholds de capacidade no OMV notificando o administrador por e-mail quando a ocupação do pool MergerFS ultrapassa 80% (preventivo) e 90% (crítico), bem como alertas para saturação de memória ou anomalias de I/O.
 - **Auditoria de Tráfego Perimetral**: Análise sob demanda dos logs de inspeção e regras de firewall no OPNsense para identificar varreduras e tentativas anômalas de conexão.
 
-### 6. Integração Contínua (CI/CD)
-- **Pipeline Automatizada (GitHub Actions)**:
-  - Validação sintática e de interpolação de todas as stacks Docker Compose com `docker compose config`.
+### 6. Integração Contínua (CI/CD & Automações com IA)
+
+> [!NOTE]
+> **Transparência Profissional**: Meu histórico prático anterior foi intensamente focado em administração de sistemas Linux, virtualização Proxmox, arquitetura de redes L2/L3 e conteinerização Docker. Embora possua sólido embasamento conceitual sobre os fluxos e pipelines de CI/CD (triggers, runners, análise estática e entrega contínua), as esteiras do GitHub Actions presentes neste portfólio foram estruturadas em **pair-programming assistido por IA**. Esta é exatamente a competência que tenho mais entusiasmo em aprender na prática e integrar de imediato à minha rotina profissional junto ao time de engenharia.
+
+- **Pipeline Automatizada no Repositório (GitHub Actions - `.github/workflows/ci.yml`)**:
+  - Validação sintática de todas as stacks Docker Compose com `docker compose config`.
   - Análise estática de código dos scripts Bash com `shellcheck`.
-  - Validação de declarações e sintaxe das units do `systemd`.
+  - Validação de declarações e conformidade das units do `systemd`.
 
 ---
 
@@ -195,8 +199,11 @@ graph TB
 
 ### Validando as Stacks de Contêineres
 ```bash
-# Validar sintaxe da stack de monitoramento
-docker compose -f compose-stacks/monitoring/docker-compose.yml config
+# Validar sintaxe da stack do Uptime Kuma
+docker compose -f compose-stacks/agora-community/uptime-kuma/docker-compose.yml config
+
+# Validar sintaxe da stack de streaming (Jellyfin/Navidrome)
+docker compose -f compose-stacks/homer-media/jellyfin-navidrome/docker-compose.yml config
 
 # Validar sintaxe da stack de ingress
 docker compose -f compose-stacks/ingress-proxy/docker-compose.yml config
@@ -204,8 +211,8 @@ docker compose -f compose-stacks/ingress-proxy/docker-compose.yml config
 
 ### Validando os Scripts de Automação
 ```bash
-# Executar análise estática de conformidade no script de backup
-shellcheck automation/scripts/backup-rclone.sh
+# Executar análise estática de conformidade nos scripts de rotina
+shellcheck automation/scripts/*.sh
 ```
 
 ---
