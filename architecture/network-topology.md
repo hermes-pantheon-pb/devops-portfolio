@@ -24,6 +24,12 @@ graph TB
             OPN_WAN["Porta 1 (igb0): WAN Direta (DHCP/PPPoE)"]
             OPN_DDNS["Plugin Integrado: os-ddns (Resolução Dinâmica de Endpoints)"]
             OPN_CORE["Motor de Firewall & Roteamento Inter-VLAN"]
+            
+            subgraph OPN_WG ["Instâncias WireGuard no Firewall"]
+                WG_ADMIN["WireGuard Admin (Full Access à Rede Interna)"]
+                WG_GUEST["WireGuard Convidado (Acesso Restrito / Guest Rules)"]
+            end
+            
             OPN_VTNET["Interface VirtIO Trunk (vtnet0)"]
             OPN_VLAN10["vlan01.10.0 (Tag 10 - Main_Lan / 10.10.10.0/24)"]
             OPN_VLAN20["vlan02.20.0 (Tag 20 - IoT_Lan / 10.20.20.0/24)"]
@@ -72,6 +78,7 @@ graph TB
     I340_PASSTHROUGH --> OPN_WAN
     OPN_WAN --- OPN_DDNS
     OPN_WAN --- OPN_CORE
+    OPN_CORE --- OPN_WG
 
     %% Conexões VLAN OPNsense
     OPN_CORE --> OPN_VTNET
@@ -180,3 +187,12 @@ graph LR
 
 - **Mapeamento de SSIDs**: Cada rede sem fio é mapeada diretamente para a respectiva sub-interface de VLAN do OpenWrt, garantindo que celulares de visitantes ou lâmpadas inteligentes caiam automaticamente na sua zona de isolamento sem intervenção manual.
 - **Rede de Gestão OpenWrt**: Uma interface dedicada (`br-mngmt` / `192.168.2.1/24`) e um SSID reservado (`Pantheon_WRT-MNGMT`) garantem acesso seguro à gerência do roteador caso ocorra qualquer indisponibilidade no trunk principal.
+
+---
+
+## 5. Acesso Remoto, WireGuard & Resolução DDNS
+
+- **Plugin DDNS Nativo (`os-ddns`)**: Executado diretamente no OPNsense, monitora a interface WAN física (Intel i340) e atualiza os registros DNS dinâmicos em tempo real sempre que o ISP renova a concessão do IP público.
+- **Instâncias WireGuard com Privilégios Mínimos**:
+  - **Admin Tunnel**: Configurado com split-tunneling para tráfego corporativo/doméstico, liberando acesso às sub-redes `10.10.10.0/24` e interfaces de gerência de hipervisor.
+  - **Guest Tunnel**: Destinado a endpoints compartilhados, com regras restritivas no firewall que bloqueiam acesso a qualquer sub-rede privada e impedem spoofing ou varreduras de rede.
