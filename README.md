@@ -20,7 +20,7 @@ Este repositório documenta a infraestrutura que projetei e mantenho ativamente,
 - **Engenharia de Redes & Segurança**: Virtualização de firewalls perimetrais (OPNsense com PCIe Passthrough de NIC), segmentação L2/L3 com bridges Linux e VLANs 802.1Q, VPNs WireGuard e roteamento com OpenWrt.
 - **Conteinerização & Orquestração**: Docker Compose estruturado com limites de CPU/RAM, verificações de saúde (`healthchecks`), isolamento de redes de contêineres e aceleração de hardware via passthrough de GPU (SR-IOV / Intel QuickSync).
 - **Armazenamento e Política de Backup 3-2-1**: Pooling de dados com MergerFS, pontes NFS/SMB isoladas, sincronização entre nós (Syncthing) e backups criptografados com `rclone` para múltiplos provedores de nuvem (Backblaze B2, Hetzner, Google Drive).
-- **Conceitos de CI/CD & Transição Prática**: Domínio dos fundamentos teóricos de Integração Contínua (triggers, runners, linters e validações automatizadas). As esteiras de GitHub Actions deste repositório foram desenhadas com assistência de IA como laboratório prático de estudos, representando a principal área que desejo exercitar e aprofundar diretamente nos projetos da empresa.
+- **Noções de CI/CD & Interesse em Prática**: Ciente dos conceitos e fluxos de Integração Contínua (gatilhos de commit, runners, linters e testes automatizados). As esteiras de GitHub Actions deste repositório foram estruturadas com auxílio de IA como ambiente de testes e aprendizado, sendo uma área que tenho forte interesse em desenvolver e aplicar na prática dentro do laboratório.
 
 ---
 
@@ -182,7 +182,7 @@ graph TB
 ### 6. Integração Contínua (CI/CD & Automações com IA)
 
 > [!NOTE]
-> **Transparência Profissional**: Meu histórico prático anterior foi intensamente focado em administração de sistemas Linux, virtualização Proxmox, arquitetura de redes L2/L3 e conteinerização Docker. Embora possua sólido embasamento conceitual sobre os fluxos e pipelines de CI/CD (triggers, runners, análise estática e entrega contínua), as esteiras do GitHub Actions presentes neste portfólio foram estruturadas em **pair-programming assistido por IA**. Esta é exatamente a competência que tenho mais entusiasmo em aprender na prática e integrar de imediato à minha rotina profissional junto ao time de engenharia.
+> **Transparência**: Meu foco prático sempre esteve na administração de sistemas Linux, virtualização Proxmox, redes L2/L3 e conteinerização Docker. Embora esteja ciente dos conceitos de CI/CD (triggers, runners, linters e validações automatizadas), as esteiras do GitHub Actions neste repositório foram geradas com apoio de IA para fins de estudo e experimentação. Tenho total interesse e disposição para aprender a fundo e implementar essas práticas no laboratório.
 
 - **Pipeline Automatizada no Repositório (GitHub Actions - `.github/workflows/ci.yml`)**:
   - Validação sintática de todas as stacks Docker Compose com `docker compose config`.
