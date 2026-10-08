@@ -1,0 +1,23 @@
+# ==============================================================================
+# MicroVM Stack: Arcadia_GameServer
+# Purpose: Minecraft server fleet management with multi-port mapping (Java + Bedrock + Dynmap)
+# ==============================================================================
+
+services:
+  crafty:
+    image: registry.gitlab.com/crafty-controller/crafty-4:latest
+    container_name: crafty_container
+    restart: always
+    environment:
+      - TZ=Etc/UTC
+    ports:
+      - "8443:8443"              # Web UI HTTPS
+      - "8123:8123"              # Dynmap Web Interface
+      - "19132:19132/udp"        # Bedrock Edition Default Port
+      - "25500-25600:25500-25600"# Range dinâmico de portas para servidores Java
+    volumes:
+      - /opt/docker/crafty/backups:/crafty/backups
+      - /opt/docker/crafty/logs:/crafty/logs
+      - /opt/docker/crafty/servers:/crafty/servers
+      - /opt/docker/crafty/config:/crafty/app/config
+      - /opt/docker/crafty/import:/crafty/import

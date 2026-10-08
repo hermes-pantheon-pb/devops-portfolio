@@ -1,0 +1,59 @@
+# ==============================================================================
+# MicroVM Stack: Agora-CommunityHost
+# Purpose: Lightweight community communication and proactive health monitoring
+# Optimizations: Strict memory cap on NodeJS runtime, log rotation, healthchecks
+# ==============================================================================
+
+services:
+  thelounge:
+    image: lscr.io/linuxserver/thelounge:latest
+    container_name: thelounge
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      # Previne expansão agressiva de memória da runtime V8 do NodeJS
+      - NODE_OPTIONS=--max-old-space-size=512
+    volumes:
+      - thelounge-data:/config
+    ports:
+      - "4000:9000"
+    deploy:
+      resources:
+        limits:
+          # Limite estrito de 384M para preservar recursos no Alpine Linux
+          memory: 384M
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    container_name: uptime-kuma
+    restart: always
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptimekuma-data:/app/data
+    environment:
+      - TZ=UTC
+      - UMASK=0022
+    networks:
+      - kuma_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  kuma_network:
+    driver: bridge
+
+volumes:
+  thelounge-data:
+  uptimekuma-data:

@@ -106,13 +106,19 @@ graph TB
 │   ├── storage-and-backup.md          # Arquitetura MergerFS, NFS seguro e política de backup 3-2-1
 │   └── security-and-ingress.md        # Ingress seguro via Oracle Cloud, zero port-forwarding e 2FA
 ├── compose-stacks/
-│   ├── monitoring/
-│   │   └── docker-compose.yml         # Stack de observabilidade Uptime Kuma com healthcheck nativo
-│   ├── ingress-proxy/
-│   │   ├── docker-compose.yml         # Nginx edge proxy com isolamento e limites de recursos
-│   │   └── nginx.conf                 # Configuração de segurança HTTP, headers e healthz
-│   └── media-acceleration/
-│       └── docker-compose.yml         # Stack com passthrough de GPU (/dev/dri) e montagem NFS
+│   ├── agora-community/
+│   │   └── docker-compose.yml         # TheLounge (memory-capped 384M) + Uptime Kuma 2 (healthcheck & logs)
+│   ├── homer-media/
+│   │   └── docker-compose.yml         # Jellyfin (iGPU /renderD128) + Navidrome + Plex (SQLite em Intel Optane)
+│   ├── prometheus-downloader/
+│   │   └── docker-compose.yml         # JDownloader-2 + Tautulli (telemetria de mídia)
+│   ├── arcadia-gameserver/
+│   │   └── docker-compose.yml         # Crafty Controller 4 (multi-port mapping: Java, Bedrock, Dynmap)
+│   ├── syncthing-node/
+│   │   └── docker-compose.yml         # Blueprint de replicação descentralizada entre MicroVMs e storage
+│   └── ingress-proxy/
+│       ├── docker-compose.yml         # Nginx edge proxy com isolamento e limites de recursos
+│       └── nginx.conf                 # Configuração de segurança HTTP, headers e healthz
 └── automation/
     ├── scripts/
     │   ├── omv-docker-rclone-backup.sh# Blueprint de container efêmero Docker no OMV com Least Privilege
@@ -145,13 +151,17 @@ graph TB
 - **Point-in-Time Recovery & Ransomware Defense**: Uso de `--backup-dir` com pastas versionadas dinâmicas. Arquivos alterados ou deletados na origem não são sobrescritos destrutivamente, permitindo restauração de estados históricos em caso de incidente.
 - **Retenção Multi-Tier na Oracle Cloud**: Ciclo de vida de backups com retenção horária (3h), diária, semanal e mensal para o Backblaze B2, com expurgo automático via análise de timestamps remotos.
 
-### 3. Conteinerização com Docker & Orquestração
-- **Padronização de Compose**: Todos os contêineres possuem:
-  - Diretivas `healthcheck` para checagem ativa de integridade da aplicação.
-  - `no-new-privileges: true` para proteção contra elevação indevida de privilégios de kernel.
-  - Alocação e reserva de recursos explícitas (`cpus` e `memory`) prevenindo que um serviço consuma a totalidade dos nós.
-- **Portainer Centralizado**: Agentes leves em cada microVM controlados por um nó mestre do Portainer, possibilitando governança centralizada sem sobrecarregar nós periféricos.
-- **Aceleração por Hardware**: Mapeamento seguro de nós de dispositivo (`/dev/dri/renderD128`) para transcodificação de vídeo acelerada por hardware (Intel QuickSync / SR-IOV).
+### 3. Conteinerização com Docker, MicroVMs & Alta Performance
+- **MicroVM Workloads Temáticas**: Cada domínio de aplicação opera isolado em sua própria MicroVM (Alpine/Debian):
+  - `Agora-CommunityHost`: Aplicações de comunidade e observabilidade (TheLounge + Uptime Kuma 2).
+  - `Homer-Media_server`: Streaming acelerado por hardware e servidor de áudio (Jellyfin + Navidrome + Plex).
+  - `Prometheus_downloader`: Ingestão remota de dados e telemetria (JDownloader-2 + Tautulli).
+  - `Arcadia_GameServer`: Gestão multi-porta de servidores de jogos (Crafty Controller 4).
+  - `Syncthing Node Blueprint`: Agente de replicação contínua descentralizada rodando em cada MicroVM.
+- **Engenharia de Memória & Footprint**: Otimização estrita de runtime em aplicações NodeJS (como TheLounge com `--max-old-space-size=512` e `deploy.resources.limits.memory: 384M`), assegurando execução estável e previsível dentro de microVMs Alpine enxutas.
+- **Aceleração por Hardware & GPU Passthrough**: Mapeamento direto de nós de renderização `/dev/dri/renderD128` com grupo `991` para transcodificação de vídeo em tempo real (Intel QuickSync / VAAPI) no Jellyfin.
+- **Camada de Injeção de Ultra Baixa Latência (Intel Optane)**: Montagem dedicada de disco Intel Optane de 8GB (`/mnt/optane_db/plex/Databases`) para operações atômicas de leitura/escrita do banco de dados SQLite do Plex, eliminando gargalos de metadados durante varreduras massivas de biblioteca.
+- **Portainer Centralizado**: Governança e monitoramento de ciclos de vida dos contêineres distribuídos através de agentes leves conectados ao console mestre.
 
 ### 4. Redes, Isolamento & Nuvem Híbrida
 - **OPNsense Virtualizado com Passthrough**: NIC física Intel i340 dedicada diretamente ligada ao modem via IOMMU.

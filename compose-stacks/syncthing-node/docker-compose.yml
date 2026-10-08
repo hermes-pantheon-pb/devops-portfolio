@@ -1,0 +1,25 @@
+# ==============================================================================
+# MicroVM Stack: Syncthing Node Blueprint
+# Purpose: Decentralized, encrypted data replication agent deployed across MicroVMs
+# Function: Continuously syncs configs, backups, and app state to the central storage cluster
+# ==============================================================================
+
+services:
+  syncthing:
+    image: lscr.io/linuxserver/syncthing:latest
+    container_name: syncthing
+    hostname: syncthing-node
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/docker/syncthing/config:/config
+      # Diretório de dados/backups da respectiva MicroVM (ex: /opt/docker/crafty/backups)
+      - /opt/docker/sync_data:/sync_data
+    ports:
+      - "8384:8384"       # Web GUI
+      - "22000:22000/tcp" # Sync Protocol Listen Port
+      - "22000:22000/udp" # Sync Protocol Listen Port (QUIC)
+      - "21027:21027/udp" # Local Discovery Broadcasts
