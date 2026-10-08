@@ -13,18 +13,18 @@ sequenceDiagram
     participant OCI as Oracle Cloud VPS (Edge Gateway)
     participant NGINX as Nginx Reverse Proxy (SSL + 2FA)
     participant WG as Túnel WireGuard (Outbound Only)
-    participant FW as OPNsense / Local Firewall
-    participant SVC as Serviço Interno (MicroVM / Docker)
+    participant GLUETUN as Cliente WireGuard / Gluetun (Container/VM)
+    participant SVC as Serviço Interno (Aplicação / Backend)
 
-    Note over FW,WG: O cluster local inicia e mantém o túnel WireGuard ativo para a VPS da Oracle.<br/>Nenhuma porta de entrada (Inbound) é aberta no roteador residencial!
+    Note over GLUETUN,WG: O contêiner/VM local (normalmente via Gluetun) inicia e mantém o túnel WireGuard de saída direto para a VPS da Oracle.<br/>O tráfego NÃO termina no OPNsense nem requer abertura de portas locais!
 
     User->>OCI: Acesso HTTPS (ex: app.dominio.com)
     OCI->>NGINX: Recebe na porta 443 com certificado Let's Encrypt
     NGINX->>User: Exige desafio de autenticação (2FA / Sessão Segura)
     User->>NGINX: Fornece credencial + Token 2FA
     NGINX->>WG: Encaminha tráfego autenticado pelo túnel WireGuard (10.100.0.x)
-    WG->>FW: Tráfego entra pela interface virtual do WireGuard
-    FW->>SVC: Regra de firewall encaminha para o contêiner interno
+    WG->>GLUETUN: Tráfego chega diretamente ao contêiner Gluetun / interface WireGuard do serviço
+    GLUETUN->>SVC: Roteamento local direto para a aplicação (localhost / network_mode: service:gluetun)
     SVC-->>User: Retorna resposta criptografada ponta a ponta
 ```
 
@@ -32,10 +32,11 @@ sequenceDiagram
 
 ## 2. Princípios de Segurança Aplicados
 
-### 1. Zero Inbound Ports na WAN Residencial
-Em vez de expor o IP público dinâmico da residência com port-forwarding no roteador (o que atrai varreduras automatizadas de bots, ataques DDoS e tentativas de brute-force), a infraestrutura adota uma **Oracle Cloud VPS** como bastion host / edge proxy:
-- A conexão WireGuard é originada de dentro da rede local em direção ao IP fixo da Oracle Cloud (túnel persistente de saída).
-- Firewalls perimetrais residenciais mantêm políticas de `DROP` irrestritas para conexões inbound da WAN.
+### 1. Zero Inbound Ports na WAN Residencial & Isolamento por Contêiner
+Em vez de expor o IP público dinâmico da residência com port-forwarding no roteador ou terminar o túnel no firewall OPNsense:
+- A conexão WireGuard é originada de dentro da rede local diretamente pelos contêineres e VMs que necessitam de exposição pública (usualmente encapsulado via contêiner VPN **Gluetun** como sidecar de rede).
+- O firewall perimetral OPNsense apenas atua como roteador transparente de tráfego de saída (outbound UDP), sem intermediar nem decodificar o Ingress.
+- Políticas de `DROP` irrestritas são mantidas para conexões inbound da WAN na rede residencial.
 
 ### 2. Autenticação e Proxy Reverso com Defesa em Camadas
 - **Nginx Reverse Proxy**: Gerencia terminação TLS com certificados modernos, cifras seguras e cabeçalhos de proteção (`HSTS`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`).

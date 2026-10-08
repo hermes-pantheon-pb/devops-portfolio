@@ -37,19 +37,19 @@ graph TB
     subgraph CLOUD ["Borda Pública (Oracle Cloud - OCI)"]
         OCI_EDGE["VPS Pública (Edge Gateway / Ingress)"]
         OCI_NGINX["Nginx Reverse Proxy + SSL + 2FA"]
-        OCI_WG["Endpoint WireGuard"]
+        OCI_WG["Endpoint WireGuard (Servidor Ingress)"]
         OCI_EDGE --- OCI_NGINX --- OCI_WG
     end
 
     subgraph WAN ["Trânsito Seguro & Internet"]
         ISP["Modem / ISP (IP Dinâmico)"]
-        TUNNEL["Túnel WireGuard Criptografado (Outbound-Only)"]
+        TUNNEL["Túnel WireGuard Outbound (Direto dos Contêineres)"]
     end
 
     subgraph PROXMOX ["Cluster Hipervisor (Proxmox VE)"]
         subgraph CORE_NET ["Camada de Borda & Roteamento"]
             I340_WAN["Intel i340-T2 (PCIe Passthrough - WAN)"]
-            OPNSENSE["OPNsense (os-ddns, WireGuard Admin/Guest, VLANs 10, 20, 90)"]
+            OPNSENSE["OPNsense (os-ddns, Roteamento VLANs 10, 20, 90)"]
             M_VLAN_BR0["Bridge Tronco: M_VLAN_BR0 (VLAN-Aware)"]
             ACCESS_PORT["Linux VLAN Port: M_VLAN_BR0.10"]
             MAIN_LAN["Bridge Interna: Main_Lan (Untagged)"]
@@ -60,7 +60,7 @@ graph TB
             VM_TRUSTED["MicroVMs Internas (Portainer, Uptime Kuma, Apps)"]
             VM_MEDIA["MicroVM Media Server (iGPU / SR-IOV Passthrough)"]
             VM_STORAGE["Storage VM: OMV + MergerFS (HBA Passthrough)"]
-            VM_DMZ["MicroVMs DMZ / Serviços Públicos"]
+            VM_INGRESS["Contêineres com Ingress Público (Gluetun / WireGuard Client)"]
         end
     end
 
@@ -77,20 +77,21 @@ graph TB
     end
 
     ISP --> I340_WAN --> OPNSENSE
-    OCI_WG <== TUNNEL ==> OPNSENSE
     OPNSENSE <== "VirtIO Trunk (vtnet0)" ==> M_VLAN_BR0
 
     M_VLAN_BR0 --> ACCESS_PORT --> MAIN_LAN
     MAIN_LAN --> VM_TRUSTED
     MAIN_LAN --> VM_MEDIA
-    M_VLAN_BR0 -- "Tag Específica no Proxmox" --> VM_DMZ
+    MAIN_LAN --> VM_INGRESS
+
+    OCI_WG <== "Túnel Outbound Direto (Sem terminar no OPNsense)" ==> TUNNEL ==> VM_INGRESS
 
     M_VLAN_BR0 -- "nic4 (Trunk Físico 802.1Q)" --> OPENWRT_WIFI
     
     VM_MEDIA <== "NFS v4.2 Direto" ==> NFS_ISOLAT
     NFS_ISOLAT <== "Alta Vazão Sem Firewall" ==> VM_STORAGE
 
-    VM_STORAGE -. "Rotina Automática (systemd.timer)" .-> BACKUP_TIER
+    VM_STORAGE -. "Rotinas Agendadas no OMV (Scheduled Tasks / rclone)" .-> BACKUP_TIER
 ```
 
 ---
@@ -145,14 +146,14 @@ graph TB
 ### 1. Administração de Ambientes Linux & Concorrência
 - **Distribuições Enxutas**: Utilização extensiva de **Alpine Linux** para microVMs dedicadas a serviços específicos, resultando em menor superfície de ataque, boot quase instantâneo e uso mínimo de memória RAM (< 128 MB por nó).
 - **Controle de Concorrência de I/O e CPU**: Aplicação de diretivas avançadas de kernel no Linux (`nice -n 19` e `ionice -c 3`) em tarefas agendadas na Oracle Cloud VPS. Isso garante que rotinas pesadas de compactação e envio de dados para nuvem operem exclusivamente em modo ocioso, sem impactar o desempenho do servidor de jogos.
-- **Automação com systemd & Cron**: Substituição de montagens frágeis por `.mount` e `.automount` com dependência estrita de rede.
+- **Automação com systemd & Cron**: Substituição de montagens frágeis por `.mount` e `.automount` com dependência estrita de rede em estações de trabalho e clientes Linux.
 
 ### 2. Armazenamento Resiliente & Estratégia de Backup 3-2-1
 
 ![Arquitetura de Armazenamento Local e Backup Efêmero](architecture/storage-architecture.svg)
 
 - **Mídias Físicas Distintas & Sincronização**: Sincronização contínua de dados essenciais entre dispositivos móveis (memórias flash / cartões SD), workstations (SSDs) e o cluster de armazenamento primário (HDDs mecânicos em pool MergerFS via controladora HBA dedicada).
-- **Backups via Contêineres Efêmeros (OMV)**: Execução de tarefas rclone encapsuladas em contêineres Docker descartáveis (`docker run --rm`), operando sob usuário não-root restrito (`--user 1005:100`) e com montagem estritamente somente-leitura (`:ro`), tornando impossível a corrupção da origem.
+- **Rotinas Nativas no OpenMediaVault (OMV)**: Os agendamentos periódicos de backup do cluster de armazenamento são configurados e orquestrados diretamente nas **Tarefas Agendadas do OMV** (*Scheduled Tasks* / cron integrado). Essas tarefas disparam scripts que executam contêineres Docker efêmeros descartáveis (`docker run --rm`), operando sob usuário não-root restrito (`--user 1005:100`) e com montagem estritamente somente-leitura (`:ro`), tornando impossível qualquer corrupção ou deleção acidental na origem.
 - **Point-in-Time Recovery & Ransomware Defense**: Uso de `--backup-dir` com pastas versionadas dinâmicas. Arquivos alterados ou deletados na origem não são sobrescritos destrutivamente, permitindo restauração de estados históricos em caso de incidente.
 - **Retenção Multi-Tier na Oracle Cloud**: Ciclo de vida de backups com retenção horária (3h), diária, semanal e mensal para o Backblaze B2, com expurgo automático via análise de timestamps remotos.
 
